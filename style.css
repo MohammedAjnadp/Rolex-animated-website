@@ -1,0 +1,488 @@
+:root {
+    --bg-color: #000000;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --text-accent: #c0c0c0;
+    --surface-dark: rgba(20, 20, 22, 0.7);
+    --border-color: rgba(255, 255, 255, 0.1);
+    
+    --font-heading: 'Playfair Display', serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color); /* will be animated via JS */
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+/* --- Fixed Background for color shifting smoothly --- */
+.bg-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #030303;
+    z-index: -1;
+    transition: background-color 0.1s ease;
+}
+
+/* --- Sticky Viewport (Holds the Watch) --- */
+.sticky-viewport {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    pointer-events: none; /* so we can click through to buttons if needed */
+}
+
+.watch-container {
+    display: none;
+}
+
+#hero-canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* Optional: filter for deeper contrast */
+    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5));
+}
+
+/* --- Scroll Sections Framework --- */
+.scroll-content {
+    position: relative;
+    z-index: 2;
+}
+
+.scroll-section, .scroll-track {
+    position: relative;
+    width: 100vw;
+    pointer-events: none;
+}
+
+.scroll-section > *, .scroll-track > * {
+    pointer-events: auto;
+}
+
+/* --- Massive Hero Track --- */
+.hero-track {
+    height: 250vh; /* Faster progression */
+}
+
+/* Feature Overlays pinned to the viewport */
+.feature-text {
+    position: fixed;
+    width: 300px;
+    opacity: 0; /* JS handles visibility */
+    pointer-events: none; /* Don't block scroll */
+    z-index: 3;
+    background: rgba(10, 10, 12, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.intro-text {
+    top: 50%;
+    left: 0;
+    width: 100vw;
+    transform: translateY(-50%); /* Only vertical centering here */
+    max-width: none;
+    text-align: center;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+    padding: 0;
+}
+
+.feature-tl {
+    top: 15vh;
+    left: 5vw;
+    text-align: left;
+}
+
+.feature-bl {
+    bottom: 15vh;
+    left: 5vw;
+    text-align: left;
+}
+
+.feature-tr {
+    top: 15vh;
+    right: 5vw;
+    text-align: right;
+}
+
+/* Base Responsive Typography */
+.feature-title {
+    font-family: var(--font-body);
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.feature-desc {
+    font-family: var(--font-body);
+    font-size: clamp(0.85rem, 2vw, 0.95rem);
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.ref-number {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    letter-spacing: 0.2em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+}
+
+.brand-name {
+    font-family: var(--font-heading);
+    font-size: clamp(4.5rem, 12vw, 10rem); /* Fluid typography */
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 0.85;
+    margin-bottom: 12px;
+    color: #fff;
+    text-shadow: 0 0 40px rgba(0,0,0,0.9), 0 0 80px rgba(0,0,0,0.6);
+}
+
+.model-name {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 5vw, 3.5rem); /* Fluid typography */
+    font-weight: 400;
+    font-style: italic;
+    color: var(--text-accent);
+    line-height: 1.2;
+}
+
+.scroll-indicator {
+    position: fixed;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    opacity: 0;
+    z-index: 3;
+}
+
+.scroll-indicator span {
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.scroll-indicator .line {
+    width: 1px;
+    height: 50px;
+    background: linear-gradient(to bottom, var(--text-primary) 0%, transparent 100%);
+}
+
+/* --- Story Sections --- */
+.story-section {
+    min-height: 100vh; /* Condensed from 180vh */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 5vw;
+}
+
+.story-container {
+    display: flex;
+    align-items: center;
+    gap: 80px;
+    max-width: 1200px;
+    width: 100%;
+    opacity: 0; /* Animated via JS */
+}
+
+.story-container.reverse {
+    flex-direction: row-reverse;
+}
+
+.story-image-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.story-static-image {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 24px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.text-block {
+    flex: 1;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding: 0;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    opacity: 1; /* Container handles opacity */
+}
+
+.align-right {
+    margin-left: auto;
+}
+
+.align-left {
+    margin-right: auto;
+}
+
+.section-title {
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    font-weight: 400;
+    margin-bottom: 24px;
+    color: var(--text-primary);
+}
+
+.description-text {
+    font-size: 1.15rem;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    font-weight: 300;
+}
+
+.trust-indicators {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 32px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 24px;
+}
+
+.trust-badge {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--text-accent);
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+}
+
+.trust-badge svg {
+    color: var(--text-primary);
+}
+
+/* --- Finale Section (Specs & Buy) --- */
+.finale-section {
+    min-height: 100vh;
+    padding-bottom: 10vh;
+    align-items: center;
+    justify-content: center;
+}
+
+.specs-container {
+    width: 100%;
+    max-width: 900px;
+    background: var(--surface-dark);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    padding: 80px;
+    border-radius: 32px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+    opacity: 0; /* JS Animation target */
+}
+
+.specs-title {
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    font-weight: 400;
+    margin-bottom: 48px;
+    text-align: center;
+}
+
+.specs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    margin-bottom: 60px;
+}
+
+.specs-list {
+    list-style: none;
+}
+
+.specs-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.spec-label {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+}
+
+.spec-value {
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 1rem;
+    text-align: right;
+}
+
+.purchase-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-top: 1px solid var(--border-color);
+    padding-top: 48px;
+    gap: 24px;
+}
+
+.price {
+    font-family: var(--font-body);
+    font-size: 3rem;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+}
+
+.cta-button {
+    background-color: var(--text-primary);
+    color: #000;
+    border: none;
+    padding: 24px 64px;
+    border-radius: 40px; /* More modern shape */
+    font-family: var(--font-body);
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cta-button:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 20px 40px rgba(255,255,255,0.2);
+}
+
+.cta-button-link {
+    text-decoration: none;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.footer-location {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* --- Responsive Adjustments: Tablet (1024px) --- */
+@media (max-width: 1024px) {
+    .story-container {
+        gap: 40px;
+    }
+}
+
+/* --- Responsive Adjustments: Mobile (768px) --- */
+@media (max-width: 768px) {
+    /* Hero track height should be slightly less on mobile?
+       Actually, leave it alone for now, but optimize features. */
+    
+    .feature-text {
+        width: calc(100% - 40px); /* Fill the width proportionally */
+        max-width: 320px;
+        left: 20px !important;
+        right: auto !important;
+        background: rgba(10, 10, 12, 0.85); /* Darker on mobile for readability */
+    }
+
+    .feature-tl, .feature-bl, .feature-tr {
+        left: 20px !important;
+        right: auto !important;
+        text-align: left;
+    }
+
+    .feature-tl { top: 10vh; }
+    .feature-tr { top: 30vh; } /* Stagger them vertically on mobile */
+    .feature-bl { bottom: 10vh; }
+
+    .story-container, .story-container.reverse {
+        flex-direction: column;
+        text-align: center;
+        gap: 40px;
+    }
+
+    .story-section {
+        padding: 60px 20px;
+    }
+
+    .text-block {
+        order: 2;
+    }
+
+    .story-image-wrapper {
+        order: 1;
+        width: 100%;
+    }
+
+    .story-static-image {
+        max-width: 100%;
+        border-radius: 16px;
+    }
+
+    .specs-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .specs-container {
+        padding: 40px 20px;
+    }
+
+    .price {
+        font-size: 2.2rem;
+    }
+
+    .cta-button {
+        padding: 20px 40px;
+        width: 100%;
+    }
+}
+
+/* --- Responsive Adjustments: Small Devices (480px) --- */
+@media (max-width: 480px) {
+    .brand-name {
+        font-size: 4rem;
+    }
+}

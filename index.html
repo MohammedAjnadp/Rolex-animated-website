@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rolex Sea-Dweller Ref. 16600 | Frame Sequence</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <!-- Background Overlay for color shifts -->
+    <div id="bg-overlay" class="bg-overlay"></div>
+
+    <!-- Sticky Visual Viewport (Holds the Canvas Sequence) -->
+    <div class="sticky-viewport">
+        <!-- Canvas for the 240 frame scrub sequence -->
+        <canvas id="hero-canvas"></canvas>
+    </div>
+
+    <!-- Scrolling Sections -->
+    <main class="scroll-content">
+        
+        <!-- Section 1: Massive Hero Track allowing 240 frame scrub -->
+        <section class="scroll-track hero-track" id="section-intro">
+            
+            <!-- Feature Text Overlay Blocks -->
+            <div class="feature-text text-center intro-text" id="feature-1">
+                <span class="ref-number">Ref: 16600</span>
+                <h1 class="brand-name">ROLEX</h1>
+                <h2 class="model-name">Sea-Dweller</h2>
+            </div>
+            
+            <div class="scroll-indicator" id="scroll-indicator">
+                <span>Scroll to build</span>
+                <div class="line"></div>
+            </div>
+
+            <!-- Additional feature highlights mapped to exact scroll progress points -->
+            <div class="feature-text feature-tl" id="feature-2">
+                <h3 class="feature-title">Oyster Steel</h3>
+                <p class="feature-desc">Subtitle: Forged in 904L aerospace-grade stainless steel.</p>
+            </div>
+
+            <div class="feature-text feature-bl" id="feature-3">
+                <h3 class="feature-title">The Depths</h3>
+                <p class="feature-desc">Subtitle: Guaranteed waterproof to 1,220 metres.</p>
+            </div>
+
+            <div class="feature-text feature-tr" id="feature-4">
+                <h3 class="feature-title">Calibre 3135</h3>
+                <p class="feature-desc">Subtitle: A chronometer certified mechanical heart.</p>
+            </div>
+        </section>
+
+        <!-- Section 2: Product Story Part 1 -->
+        <section class="scroll-section story-section" id="section-story-1">
+            <div class="story-container" id="container-story-1">
+                <div class="story-image-wrapper">
+                    <img src="assets/dial.png" alt="Rolex Dial Detail" class="story-static-image">
+                </div>
+                <div class="text-block" id="text-story-1">
+                    <h3 class="section-title">The Condition.</h3>
+                    <p class="description-text">
+                        An immaculate 40mm Stainless Steel case paired with a striking, flawless black dial. Dated 2007, a condition 1 (mint) masterpiece.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Product Story Part 2 & Trust -->
+        <section class="scroll-section story-section" id="section-story-2">
+            <div class="story-container reverse" id="container-story-2">
+                <div class="story-image-wrapper">
+                    <img src="assets/box.png" alt="Rolex Legacy Box" class="story-static-image">
+                </div>
+                <div class="text-block" id="text-story-2">
+                    <h3 class="section-title">A Complete Legacy.</h3>
+                    <p class="description-text">
+                        Includes the Original Box, Official Service Papers, and untouched Service Stickers. Protected by a 1-year Pacha of London warranty.
+                    </p>
+                    <div class="trust-indicators">
+                        <div class="trust-badge">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            <span>Pacha Of London</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Specifications & Purchase -->
+        <section class="scroll-section finale-section" id="section-finale">
+            <div class="specs-container" id="specs-card">
+                <h3 class="specs-title">Technical Specifications</h3>
+                
+                <div class="specs-grid">
+                    <div class="specs-column">
+                        <ul class="specs-list">
+                            <li><span class="spec-label">Condition</span> <span class="spec-value">1 (mint)</span></li>
+                            <li><span class="spec-label">Year</span> <span class="spec-value">2007</span></li>
+                            <li><span class="spec-label">Case Size</span> <span class="spec-value">40mm</span></li>
+                            <li><span class="spec-label">Dial</span> <span class="spec-value">Black</span></li>
+                            <li><span class="spec-label">Gender</span> <span class="spec-value">Men's</span></li>
+                        </ul>
+                    </div>
+                    <div class="specs-column">
+                        <ul class="specs-list">
+                            <li><span class="spec-label">Movement</span> <span class="spec-value">Automatic</span></li>
+                            <li><span class="spec-label">Bracelet</span> <span class="spec-value">Steel</span></li>
+                            <li><span class="spec-label">Box/Papers</span> <span class="spec-value">Yes</span></li>
+                            <li><span class="spec-label">Glass</span> <span class="spec-value">Sapphire</span></li>
+                            <li><span class="spec-label">Bezel</span> <span class="spec-value">Stainless Steel</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="purchase-action">
+                    <div class="price">£11,000.00</div>
+                    <a href="https://www.rolex.com/en-us/watches/sea-dweller" target="_blank" rel="noopener noreferrer" class="cta-button-link">
+                        <button class="cta-button">Buy This Watch</button>
+                    </a>
+                    <div class="footer-location">Located in London</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Vanilla Framer Motion + Canvas Engine implementation -->
+    <script type="module" src="script.js"></script>
+</body>
+</html>
