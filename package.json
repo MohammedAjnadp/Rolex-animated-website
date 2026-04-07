@@ -1,0 +1,11 @@
+{
+  "name": "rolex-animated-website",
+  "version": "1.0.0",
+  "description": "Premium animated Rolex Sea-Dweller landing page.",
+  "scripts": {
+    "start": "serve ."
+  },
+  "devDependencies": {
+    "serve": "^14.2.1"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "name": "rolex-animated-website",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
+}
