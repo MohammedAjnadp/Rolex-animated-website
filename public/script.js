@@ -2,61 +2,114 @@ import { animate, scroll, inView } from "https://cdn.jsdelivr.net/npm/motion@lat
 
 document.addEventListener("DOMContentLoaded", () => {
     // -------------------------------------------------------------
-    // Canvas Image Sequence Engine
+    // Performance & Device Detection
     // -------------------------------------------------------------
+    const isMobile = window.innerWidth <= 768;
     const canvas = document.getElementById("hero-canvas");
     const context = canvas.getContext("2d");
     const heroTrack = document.getElementById("section-intro");
+    const preloaderBar = document.getElementById("preloader-bar");
+    const preloader = document.getElementById("preloader");
     
-    // Set internal canvas resolution (match high quality)
-    // The frames are large, around 1080p, let's keep canvas resolution high
-    canvas.width = 1920;
-    canvas.height = 1080;
+    // Adaptive Resolution
+    // On mobile, we reduce buffer size to 720p for faster pixel throughput
+    canvas.width = isMobile ? 1280 : 1920;
+    canvas.height = isMobile ? 720 : 1080;
 
-    const frameCount = 240;
-    const currentFrame = index => (
-        `images/herosection/ezgif-frame-${index.toString().padStart(3, '0')}.png`
-    );
+    // Adaptive Frame Count
+    // On mobile, we use 120 frames (skip every 2nd) to save ~50% RAM/GPU memory
+    const maxFrames = 240;
+    const frameCount = isMobile ? 120 : maxFrames;
+    const frameStep = isMobile ? 2 : 1;
+
+    const currentFrame = index => {
+        // If mobile, we map index 1-120 to actual files 1-240 (every 2nd)
+        const actualIndex = isMobile ? index * 2 : index;
+        const paddedIndex = Math.min(maxFrames, Math.max(1, actualIndex))
+            .toString().padStart(3, '0');
+        return `images/herosection/ezgif-frame-${paddedIndex}.png`;
+    };
 
     const images = [];
     let loadedImages = 0;
 
-    // Load first frame immediately to display something
+    // -------------------------------------------------------------
+    // Progressive Loading Engine
+    // -------------------------------------------------------------
+    
+    // Stage 1: Load first frame immediately
     const imgFirst = new Image();
     imgFirst.src = currentFrame(1);
     imgFirst.onload = () => {
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        // Draw the image filling the canvas (object-fit: contain logic is handled by CSS)
-        // Wait, CSS object-fit: contain applies to the <canvas> tag itself relative to viewport!
-        // We just draw the image to cover the canvas internal buffer.
-        context.drawImage(imgFirst, 0, 0, canvas.width, canvas.height);
-        
-        // Begin background preloading of remaining frames
-        preloadImages();
+        renderFrame(1);
+        preloadStage2(); // Load keyframes
     }
-    images[1] = imgFirst;
 
-    function preloadImages() {
-        for (let i = 2; i <= frameCount; i++) {
+    function preloadStage2() {
+        // Load every 10th frame first to get "Quick Interaction" ready
+        const keyFrames = [];
+        for (let i = 1; i <= frameCount; i += 10) {
+            keyFrames.push(i);
+        }
+
+        let keyLoaded = 0;
+        keyFrames.forEach(i => {
             const img = new Image();
             img.src = currentFrame(i);
-            img.onload = () => { loadedImages++; };
+            img.onload = () => {
+                keyLoaded++;
+                loadedImages++;
+                updatePreloader();
+                if (keyLoaded === keyFrames.length) preloadStage3(); // Load the rest
+            };
             images[i] = img;
+        });
+    }
+
+    function preloadStage3() {
+        // Load all remaining frames
+        for (let i = 1; i <= frameCount; i++) {
+            if (images[i]) continue; // Skip if already loaded in Stage 2
+            const img = new Image();
+            img.src = currentFrame(i);
+            img.onload = () => {
+                loadedImages++;
+                updatePreloader();
+            };
+            images[i] = img;
+        }
+    }
+
+    function updatePreloader() {
+        const percent = (loadedImages / frameCount) * 100;
+        if (preloaderBar) preloaderBar.style.width = `${percent}%`;
+        
+        // Hide preloader once "enough" frames are ready (e.g. 20% or 30 frames)
+        if (loadedImages >= Math.min(30, frameCount) && preloader) {
+            preloader.classList.add("fade-out");
+        }
+    }
+
+    function renderFrame(index) {
+        const img = images[index];
+        if (img && img.complete) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(img, 0, 0, canvas.width, canvas.height);
         }
     }
 
     // Engine State for Smooth LERP (Linear Interpolation)
     let currentProgress = 0;
-    const ease = 0.07; // 0.07 gives a very smooth, high-end glide
+    const ease = isMobile ? 0.12 : 0.08; // Snappier on mobile to feel "lighter"
 
     function renderLoop() {
         const trackHeight = heroTrack.clientHeight - window.innerHeight;
+        if (trackHeight <= 0) return requestAnimationFrame(renderLoop);
+
         let targetProgress = window.scrollY / trackHeight;
-        
-        // Clamp target progress
         targetProgress = Math.max(0, Math.min(targetProgress, 1));
         
-        // Lerp magic: smoothly glide current progress towards target
+        // Lerp magic
         currentProgress += (targetProgress - currentProgress) * ease;
         
         const frameIndex = Math.min(
@@ -64,95 +117,50 @@ document.addEventListener("DOMContentLoaded", () => {
             Math.max(1, Math.floor(currentProgress * frameCount))
         );
 
-        // Render if available
-        if (images[frameIndex] && images[frameIndex].complete) {
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            context.drawImage(images[frameIndex], 0, 0, canvas.width, canvas.height);
-        }
-
-        // Loop infinitely to maintain smooth glide even after scrolling stops
+        renderFrame(frameIndex);
         requestAnimationFrame(renderLoop);
     }
 
-    // Start the infinite render loop
     requestAnimationFrame(renderLoop);
 
     // -------------------------------------------------------------
-    // Framer Motion Choreography
+    // Framer Motion Choreography (Fixed for Full Black)
     // -------------------------------------------------------------
     
-    // Background overlay color shifting
-    scroll(
-        animate("#bg-overlay", { 
-            backgroundColor: ["#000000", "#12141c", "#1a1c1e", "#0a0a0a"]
-        }),
-        { 
-            target: document.body,
-            offset: ["start start", "end end"]
-        }
-    );
+    // Background remains pure black (No color shift needed unless user specifically requests a subtle one)
+    // We'll keep the overlay fixed at #000000
 
-    // Feature 1: Intro Text - visible on load, fades out quickly
+    // Feature 1: Intro Text
     scroll(
         animate("#feature-1", { opacity: [1, 1, 0], y: ["-50%", "-50%", "-80%"], scale: [1, 1, 0.98] }),
-        { 
-            target: document.getElementById("section-intro"), 
-            // Fades out between 0% and 15% of the hero section scroll
-            offset: ["start start", "15% start"] 
-        }
-    );
-
-    // Scroll Indicator fades out almost instantly
-    scroll(
-        animate("#scroll-indicator", { opacity: [0.6, 0] }),
-        { 
-            target: document.getElementById("section-intro"), 
-            offset: ["start start", "5% start"] 
-        }
+        { target: heroTrack, offset: ["start start", "15% start"] }
     );
 
     // Feature 2: Oyster Steel (Top Left)
     scroll(
         animate("#feature-2", { opacity: [0, 1, 1, 0], x: ["-40px", "0px", "0px", "-40px"] }),
-        { 
-            target: document.getElementById("section-intro"), 
-            // Stagger 1: 15% - 35%
-            offset: ["15% start", "20% start", "30% start", "35% start"] 
-        }
+        { target: heroTrack, offset: ["15% start", "20% start", "30% start", "35% start"] }
     );
 
-    // Feature 4: The Calibre (Top Right) - Adjusted to come earlier where movement is visible
+    // Feature 4: The Calibre (Top Right)
     scroll(
         animate("#feature-4", { opacity: [0, 1, 1, 0], x: ["40px", "0px", "0px", "40px"] }),
-        { 
-            target: document.getElementById("section-intro"), 
-            // Stagger 2: 45% - 65% (Sweet spot for movement reveal)
-            offset: ["45% start", "50% start", "60% start", "65% start"] 
-        }
+        { target: heroTrack, offset: ["45% start", "50% start", "60% start", "65% start"] }
     );
 
     // Feature 3: The Depths (Bottom Left)
     scroll(
         animate("#feature-3", { opacity: [0, 1, 1, 0], x: ["-40px", "0px", "0px", "-40px"] }),
-        { 
-            target: document.getElementById("section-intro"), 
-            // Stagger 3: 75% - 95%
-            offset: ["75% start", "80% start", "90% start", "95% start"] 
-        }
+        { target: heroTrack, offset: ["75% start", "80% start", "90% start", "95% start"] }
     );
 
     // Fade entire canvas out as we move to the story sections
     scroll(
         animate("canvas", { opacity: [1, 1, 0] }),
-        {
-            target: document.getElementById("section-intro"),
-            offset: ["start start", "95% start", "end start"]
-        }
-    )
+        { target: heroTrack, offset: ["start start", "95% start", "end start"] }
+    );
 
-    // -------------------------------------------------------------
-    // Standard Sections (Below Hero Track)
-    // -------------------------------------------------------------
+    // Story Sections
     scroll(
         animate("#container-story-1", { opacity: [0, 1, 1, 0], y: [50, 0, 0, -50] }),
         { target: document.getElementById("section-story-1"), offset: ["start end", "center center", "center start", "end start"] }
@@ -176,3 +184,4 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     });
 });
+
